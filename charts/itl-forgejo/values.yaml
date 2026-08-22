@@ -1,0 +1,100 @@
+# Values for the itl-forgejo wrapper chart.
+# Everything here nests under `forgejo:` because forgejo/forgejo is a
+# dependency (sub-chart) of this chart — see Chart.yaml.
+#
+# Upstream reference values (all settings):
+# https://code.forgejo.org/forgejo-helm/forgejo-helm/raw/tag/v17.1.5/values.yaml
+#
+# Unlike the gitlab/gitlab chart, this one does NOT hard-require external
+# Postgres/Redis — it falls back to SQLite + in-memory cache/session/queue
+# if unset. That's fine for a quick try-out, but upstream explicitly calls
+# it "not recommended for production use". We wire it to external Postgres
+# + Redis below (same ITLusions infra used for itl-gitlab: CNPG + a Redis
+# instance) since this is meant for real use.
+
+forgejo:
+  ingress:
+    enabled: true
+    className: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-issuer"
+      traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+    hosts:
+      - host: forgejo.dev.itlusions.com
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+    tls:
+      - secretName: forgejo-dev-itlusions-com-tls
+        hosts:
+          - forgejo.dev.itlusions.com
+
+  gitea:
+    admin:
+      # TODO: create this secret first (keys: username, password, email) —
+      # do not put real credentials in this file.
+      #   kubectl create secret generic forgejo-admin-secret -n forgejo \
+      #     --from-literal=username=admin \
+      #     --from-literal=password='...' \
+      #     --from-literal=email=admin@itlusions.com
+      existingSecret: forgejo-admin-secret
+
+    config:
+      server:
+        DOMAIN: forgejo.dev.itlusions.com
+        ROOT_URL: "https://forgejo.dev.itlusions.com"
+        SSH_DOMAIN: forgejo.dev.itlusions.com
+
+      # ----------------------------------------------------------------
+      # External PostgreSQL (recommended over the SQLite default for
+      # anything beyond a quick try-out). TODO: point at a real CNPG
+      # cluster — see ITL.CNPG.Cluster, same pattern as ITL.Gitlab.
+      # ----------------------------------------------------------------
+      database:
+        DB_TYPE: postgres
+        HOST: "CHANGEME-postgresql-host:5432"
+        NAME: forgejo
+        USER: forgejo
+        SSL_MODE: require
+        # PASSWD is intentionally not set here — see
+        # gitea.additionalConfigFromEnvs below, which injects it from a
+        # Secret instead of plaintext in values.
+
+      # ----------------------------------------------------------------
+      # External Redis for cache/session/queue (recommended over the
+      # in-memory defaults). TODO: point at a real Redis host.
+      # ----------------------------------------------------------------
+      cache:
+        ADAPTER: redis
+        HOST: "redis://CHANGEME-redis-host:6379/0"
+      session:
+        PROVIDER: redis
+        PROVIDER_CONFIG: "redis://CHANGEME-redis-host:6379/1"
+      queue:
+        TYPE: redis
+        CONN_STR: "redis://CHANGEME-redis-host:6379/2"
+
+    # Injects DB/Redis passwords from Secrets as GITEA__<SECTION>__<KEY>
+    # env vars, instead of embedding plaintext in this values file.
+    # TODO: create these secrets first, e.g.:
+    #   kubectl create secret generic forgejo-postgresql-password -n forgejo \
+    #     --from-literal=password='...'
+    #   kubectl create secret generic forgejo-redis-password -n forgejo \
+    #     --from-literal=password='...'
+    # (skip the redis one entirely if your Redis has no auth configured)
+    additionalConfigFromEnvs:
+      - name: GITEA__DATABASE__PASSWD
+        valueFrom:
+          secretKeyRef:
+            name: forgejo-postgresql-password
+            key: password
+      # - name: GITEA__CACHE__HOST # append "?password=..." isn't ideal;
+      #                            # prefer redis ACL/URL-embedded auth,
+      #                            # adjust once real Redis is wired up.
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    # TODO: confirm this matches an actual StorageClass in the cluster
+    storageClass: ""

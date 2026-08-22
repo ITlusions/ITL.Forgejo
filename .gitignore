@@ -1,0 +1,5 @@
+# Downloaded Helm dependencies (fetched via `helm dependency update`)
+charts/itl-forgejo/charts/*.tgz
+
+# Local test/debug rendering output
+/tmp-render*.yaml
