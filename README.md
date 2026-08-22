@@ -4,8 +4,8 @@ Wrapper Helm chart for self-hosted [Forgejo](https://forgejo.org/), deployed
 via the official [`forgejo-helm`](https://code.forgejo.org/forgejo-helm/forgejo-helm)
 chart as a dependency (distributed via OCI, not a classic chart repo) — this
 repo just holds our values overrides and cluster-specific wiring (Traefik
-ingress, cert-manager, external Postgres/Redis), same pattern as
-`ITL.Gitlab` and `rustdesk-server`.
+ingress, cert-manager, external Postgres, in-cluster Redis), same pattern
+as `ITL.Gitlab` and `rustdesk-server`.
 
 - Chart: `charts/itl-forgejo` (depends on `forgejo/forgejo` v17.1.5, app v15.0.7)
 - Upstream: `oci://code.forgejo.org/forgejo-helm/forgejo` ·
@@ -18,21 +18,25 @@ ingress, cert-manager, external Postgres/Redis), same pattern as
 
 Unlike `gitlab/gitlab`, this chart does **not** hard-require external
 services — it falls back to SQLite + in-memory cache/session/queue if left
-unconfigured, which is fine for a quick try-out. `values.yaml` here wires it
-to external Postgres + Redis instead (upstream explicitly says the
-in-memory/SQLite defaults are "not recommended for production use"), with
-placeholder hosts (`CHANGEME-...`) and secret refs that need real infra and
-Secrets created before install:
+unconfigured, which is fine for a quick try-out. `values.yaml` here wires
+Postgres to an external instance (upstream explicitly says the
+in-memory/SQLite defaults are "not recommended for production use"), but
+uses **Redis deployed in-cluster by this chart itself**
+(`templates/redis.yaml`, gated by `redis.enabled`, default `true`) — a
+single-replica Deployment+PVC+Service, no external Redis needed. Forgejo's
+Redis load (cache/session/queue for one instance) doesn't need HA or a
+managed service.
 
-| Need | Suggested source | Values.yaml key |
+| Need | Source | Values.yaml key |
 |---|---|---|
-| PostgreSQL | CNPG cluster — see `ITL.CNPG.Cluster` | `forgejo.gitea.config.database.HOST` + `forgejo-postgresql-password` secret |
-| Redis (cache/session/queue) | a Redis instance in-cluster | `forgejo.gitea.config.{cache,session,queue}.*` |
+| PostgreSQL | External — CNPG cluster, see `ITL.CNPG.Cluster` | `forgejo.gitea.config.database.HOST` + `forgejo-postgresql-password` secret (still `CHANGEME-...`, needs real infra) |
+| Redis (cache/session/queue) | In-cluster, bundled with this chart | `redis.*` (works out of the box — nothing to provision) |
 | Admin user | — | `forgejo-admin-secret` (username/password/email keys) |
 
-Passwords are injected via `gitea.additionalConfigFromEnvs` (rendered as
-`GITEA__DATABASE__PASSWD` etc., sourced from a Secret) — nothing sensitive
-is in `values.yaml` itself.
+The DB password is injected via `gitea.additionalConfigFromEnvs` (rendered
+as `GITEA__DATABASE__PASSWD`, sourced from a Secret) — nothing sensitive is
+in `values.yaml` itself. The in-cluster Redis has no auth configured (fine
+for an in-cluster-only, unexposed service).
 
 ## Prerequisites
 
@@ -73,7 +77,11 @@ See `charts/itl-forgejo/values.yaml` for the full annotated list — in short:
 - `gitea.config.server.{DOMAIN,ROOT_URL,SSH_DOMAIN}` → matches the ingress host
 - `gitea.config.database` → external Postgres (placeholder host; password
   via `additionalConfigFromEnvs` + Secret, not plaintext)
-- `gitea.config.{cache,session,queue}` → external Redis (placeholder host)
+- `redis.enabled: true` + `gitea.config.{cache,session,queue}` → points at
+  the in-cluster Redis this chart deploys
+  (`<release>-redis.<namespace>.svc.cluster.local`, hardcoded assuming
+  `helm install forgejo -n forgejo` per the command below — adjust if you
+  install under a different release name/namespace)
 - `gitea.admin.existingSecret` → `forgejo-admin-secret`
 - `persistence.size` → 10Gi (chart default), `storageClass` left to cluster
   default — confirm this is what you want
