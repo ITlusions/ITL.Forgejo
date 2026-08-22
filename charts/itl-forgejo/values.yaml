@@ -8,9 +8,26 @@
 # Unlike the gitlab/gitlab chart, this one does NOT hard-require external
 # Postgres/Redis — it falls back to SQLite + in-memory cache/session/queue
 # if unset. That's fine for a quick try-out, but upstream explicitly calls
-# it "not recommended for production use". We wire it to external Postgres
-# + Redis below (same ITLusions infra used for itl-gitlab: CNPG + a Redis
-# instance) since this is meant for real use.
+# it "not recommended for production use". We wire Postgres to an external
+# CNPG cluster (same pattern as ITL.Gitlab) but use an in-cluster Redis —
+# see `redis:` below and templates/redis.yaml. Forgejo's redis load is
+# light (cache/session/queue for a single instance), so a single-replica
+# in-cluster Redis is plenty; no need for a managed/external one here.
+
+# In-cluster Redis for Forgejo's cache/session/queue — plain
+# Deployment+PVC+Service (templates/redis.yaml), not a chart dependency
+# (avoids the Bitnami images-behind-a-subscription issue). Single replica,
+# no HA — fine for this workload. Disable and point forgejo.gitea.config.*
+# at a real external Redis instead if you'd rather not run this in-chart.
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "7-alpine"
+  persistence:
+    size: 1Gi
+    storageClass: ""
+  resources: {}
 
 forgejo:
   ingress:
@@ -62,36 +79,34 @@ forgejo:
         # Secret instead of plaintext in values.
 
       # ----------------------------------------------------------------
-      # External Redis for cache/session/queue (recommended over the
-      # in-memory defaults). TODO: point at a real Redis host.
+      # In-cluster Redis (see `redis:` above / templates/redis.yaml) for
+      # cache/session/queue, instead of the in-memory defaults. Hostname
+      # assumes the release is installed as `forgejo` in the `forgejo`
+      # namespace, per this repo's README install command — adjust if
+      # you install it differently.
       # ----------------------------------------------------------------
       cache:
         ADAPTER: redis
-        HOST: "redis://CHANGEME-redis-host:6379/0"
+        HOST: "redis://forgejo-redis.forgejo.svc.cluster.local:6379/0"
       session:
         PROVIDER: redis
-        PROVIDER_CONFIG: "redis://CHANGEME-redis-host:6379/1"
+        PROVIDER_CONFIG: "redis://forgejo-redis.forgejo.svc.cluster.local:6379/1"
       queue:
         TYPE: redis
-        CONN_STR: "redis://CHANGEME-redis-host:6379/2"
+        CONN_STR: "redis://forgejo-redis.forgejo.svc.cluster.local:6379/2"
 
-    # Injects DB/Redis passwords from Secrets as GITEA__<SECTION>__<KEY>
-    # env vars, instead of embedding plaintext in this values file.
-    # TODO: create these secrets first, e.g.:
+    # Injects the DB password from a Secret as a GITEA__DATABASE__PASSWD
+    # env var, instead of embedding plaintext in this values file.
+    # TODO: create this secret first, e.g.:
     #   kubectl create secret generic forgejo-postgresql-password -n forgejo \
     #     --from-literal=password='...'
-    #   kubectl create secret generic forgejo-redis-password -n forgejo \
-    #     --from-literal=password='...'
-    # (skip the redis one entirely if your Redis has no auth configured)
+    # (the in-cluster Redis above has no auth, so nothing needed for it)
     additionalConfigFromEnvs:
       - name: GITEA__DATABASE__PASSWD
         valueFrom:
           secretKeyRef:
             name: forgejo-postgresql-password
             key: password
-      # - name: GITEA__CACHE__HOST # append "?password=..." isn't ideal;
-      #                            # prefer redis ACL/URL-embedded auth,
-      #                            # adjust once real Redis is wired up.
 
   persistence:
     enabled: true
