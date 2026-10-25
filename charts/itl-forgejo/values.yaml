@@ -46,6 +46,16 @@ postgresql:
     size: 5Gi
     storageClass: "ha-dbs-lh"
 
+# Auto-generates the forgejo-admin-secret Secret (templates/admin-secret.yaml)
+# on first install instead of requiring a manual `kubectl create secret`
+# step - password is random, generated once, then kept stable across
+# upgrades. Set create: false and manage gitea.admin.existingSecret
+# yourself if you'd rather provide a specific password.
+adminSecret:
+  create: true
+  username: admin
+  email: admin@itlusions.com
+
 forgejo:
   ingress:
     enabled: true

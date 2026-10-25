@@ -31,7 +31,7 @@ managed service.
 |---|---|---|
 | PostgreSQL | In-cluster CNPG `Cluster`, bundled with this chart (`templates/cnpg-cluster.yaml`) — needs the CNPG operator already installed cluster-wide, see `itl.cnpg/operator` | `postgresql.*` (works out of the box — CNPG auto-creates the `forgejo` db/user and a `forgejo-db-app` Secret, nothing to provision by hand) |
 | Redis (cache/session/queue) | In-cluster, bundled with this chart | `redis.*` (works out of the box — nothing to provision) |
-| Admin user | — | `forgejo-admin-secret` (username/password/email keys) |
+| Admin user | Auto-generated on first install (`templates/admin-secret.yaml`) | `adminSecret.*` — password is random, generated once and kept stable across upgrades |
 
 The DB password is injected via `gitea.additionalConfigFromEnvs` (rendered
 as `GITEA__DATABASE__PASSWD`, sourced from CNPG's own `forgejo-db-app`
@@ -45,16 +45,12 @@ in-cluster-only, unexposed service).
 
 - The CNPG operator installed cluster-wide first (see `itl.cnpg/operator`)
   — `templates/cnpg-cluster.yaml` here needs the `Cluster` CRD to exist.
-- The admin Secret, created ahead of install:
-  ```bash
-  kubectl create secret generic forgejo-admin-secret -n forgejo \
-    --from-literal=username=admin \
-    --from-literal=password='...' \
-    --from-literal=email=admin@itlusions.com
-  ```
 - Traefik ingress controller + cert-manager with a working
   `letsencrypt-issuer` `ClusterIssuer` (already in place cluster-wide,
   same as `itl.website` / `rustdesk-server` / `ITL.Gitlab`)
+
+Nothing else to create by hand - both the admin password and the database
+credentials are generated automatically on first install.
 
 ## Install
 
@@ -95,4 +91,10 @@ See `charts/itl-forgejo/values.yaml` for the full annotated list — in short:
 kubectl get pods -n forgejo
 kubectl get ingress -n forgejo
 kubectl get certificate -n forgejo
+```
+
+Retrieve the auto-generated admin password:
+
+```bash
+kubectl get secret forgejo-admin-secret -n forgejo -o jsonpath="{.data.password}" | base64 --decode
 ```
