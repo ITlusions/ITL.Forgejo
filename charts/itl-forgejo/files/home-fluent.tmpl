@@ -194,8 +194,12 @@
      itself from the visitor's own clock, no redeploy needed). */
   .itl-spooky-only { display: none; }
   .itl-wrap.itl-halloween .itl-spooky-only { display: inline; }
-  .itl-wrap.itl-halloween { --itl-accent: #ff7518; }
-  .itl-wrap.itl-halloween .itl-tag { background: #ff7518; color: #1a0f00; }
+  /* --itl-accent-ink lightened too - buttons (Sign in, Request an
+     offer) use it as their text color on an --itl-accent background,
+     and dark text on this orange reads poorly. */
+  .itl-wrap.itl-halloween { --itl-accent: #ff7518; --itl-accent-ink: #fff6ee; }
+  /* No solid fill on the tag - an outlined badge instead of a bar. */
+  .itl-wrap.itl-halloween .itl-tag { background: transparent; border: 1.5px solid #ff7518; color: #ff7518; }
   /* The tag dot means "operational" (green = healthy) - stays green
      during Halloween too, it's a status indicator, not a decorative
      accent. */
