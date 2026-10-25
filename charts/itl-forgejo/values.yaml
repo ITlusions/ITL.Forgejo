@@ -65,7 +65,13 @@ adminSecret:
 forgejo:
   ingress:
     enabled: true
-    className: traefik
+    # NOT "traefik" - the actual IngressClass in this cluster is named
+    # itl-traefik (confirmed via `kubectl get ingressclass`; every other
+    # working ingress - Headscale, Keycloak, the website - uses it too).
+    # A plain "traefik" matches no IngressClass, so Traefik never claims
+    # this Ingress and falls back to serving its self-signed default
+    # cert - that was the SSL error.
+    className: itl-traefik
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-issuer"
       traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
