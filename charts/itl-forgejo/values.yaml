@@ -126,10 +126,26 @@ forgejo:
           - path: /
             pathType: Prefix
             port: http
+      - host: git.itlusions.nl
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+      - host: git.dev.itlusions.nl
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
     tls:
       - secretName: git-itlusions-com-tls
         hosts:
           - git.itlusions.com
+      - secretName: git-itlusions-nl-tls
+        hosts:
+          - git.itlusions.nl
+      - secretName: git-dev-itlusions-nl-tls
+        hosts:
+          - git.dev.itlusions.nl
       - secretName: git-dev-itlusions-com-tls
         hosts:
           - git.dev.itlusions.com
