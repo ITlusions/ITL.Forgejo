@@ -79,7 +79,7 @@
 <div class="itl-wrap">
   <section class="itl-hero">
     <div>
-      <div class="itl-tag">git.itlusions.com &middot; operational</div>
+      <div class="itl-tag"><span class="itl-spooky-only">&#127875;&nbsp;</span>git.itlusions.com &middot; operational</div>
       <h1 class="itl-headline">The team's git, on the cluster you'd expect.</h1>
       <p class="itl-sub">Self-hosted Forgejo running on the Talos Kubernetes cluster, backed by a CloudNativePG Postgres cluster and single sign-on through Keycloak. No public registration, no anonymous browsing &mdash; every repository here belongs to someone on the team.</p>
       <div class="itl-cta-row">
@@ -90,7 +90,8 @@
       </div>
     </div>
 
-    <div class="itl-fluent-win">
+    <div class="itl-fluent-win" style="position:relative">
+      <span class="itl-pumpkin">&#127875;</span>
       <div class="itl-fluent-tbar">
         <div class="itl-ttl"><span class="itl-ico"></span>Windows PowerShell</div>
         <div class="itl-ctrl">
@@ -140,5 +141,31 @@
     <span class="itl-host-pill"><span class="itl-dot"></span>git.dev.itlusions.nl</span>
   </div>
 </div>
+
+<style>
+  /* Client-side only, by design - see home-current.tmpl for why
+     (Forgejo's funcmap has no "current time" function, so a server-
+     side check would need a redeploy on Nov 1 to revert; this reverts
+     itself from the visitor's own clock, no redeploy needed). */
+  .itl-spooky-only { display: none; }
+  .itl-wrap.itl-halloween .itl-spooky-only { display: inline; }
+  .itl-wrap.itl-halloween { --itl-accent: #ff7518; }
+  .itl-wrap.itl-halloween .itl-tag { background: #b347d9; color: #fff; }
+  .itl-wrap.itl-halloween .itl-tag::before { background: #ff7518; }
+  .itl-pumpkin { display: none; position: absolute; top: -6px; right: -6px; font-size: 1.3rem; transform: rotate(12deg); }
+  .itl-wrap.itl-halloween .itl-pumpkin { display: block; }
+  .itl-tag { position: relative; }
+</style>
+<script>
+  (function () {
+    try {
+      var d = new Date(), m = d.getMonth(), day = d.getDate();
+      var inWindow = (m === 9 && day >= 25) || (m === 10 && day === 1);
+      if (inWindow) {
+        document.querySelectorAll('.itl-wrap').forEach(function (el) { el.classList.add('itl-halloween'); });
+      }
+    } catch (e) {}
+  })();
+</script>
 </div>
 {{template "base/footer" .}}

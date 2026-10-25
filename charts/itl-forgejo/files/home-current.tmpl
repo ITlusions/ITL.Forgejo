@@ -82,7 +82,7 @@
 <div class="itl-wrap">
   <section class="itl-hero">
     <div>
-      <div class="itl-eyebrow">git.itlusions.com &middot; operational</div>
+      <div class="itl-eyebrow"><span class="itl-spooky-only">&#127875;&nbsp;</span>git.itlusions.com &middot; operational</div>
       <h1 class="itl-headline">The team's git,<br>forged on <em>bare metal</em>.</h1>
       <p class="itl-sub">Self-hosted Forgejo running on the Talos Kubernetes cluster, backed by a CloudNativePG Postgres cluster and single sign-on through Keycloak. No public registration, no anonymous browsing &mdash; every repository here belongs to someone on the team.</p>
       <div class="itl-cta-row">
@@ -93,7 +93,8 @@
       </div>
     </div>
 
-    <div class="itl-term">
+    <div class="itl-term" style="position:relative">
+      <span class="itl-pumpkin">&#127875;</span>
       <div class="itl-term-bar">
         <span class="itl-dot"></span><span class="itl-dot"></span><span class="itl-dot"></span>
         <span class="itl-term-title">~/projects</span>
@@ -139,5 +140,35 @@
     <span class="itl-host-pill"><span class="itl-ok-dot"></span>git.dev.itlusions.nl</span>
   </div>
 </div>
+
+<style>
+  /* Client-side only, by design: Forgejo's template funcmap has no way
+     to read "today's date" (checked the real funcmap - DateUtils only
+     formats a given time, nothing returns current time), so a
+     server-side/deploy-time date check would need a redeploy on Nov 1
+     to actually revert. This way it reverts itself, no redeploy
+     needed - the visitor's own clock decides, and the underlying page
+     (whichever style is picked in values.yaml) is the only thing
+     shown once the window passes. */
+  .itl-spooky-only { display: none; }
+  .itl-wrap.itl-halloween .itl-spooky-only { display: inline; }
+  .itl-wrap.itl-halloween { --itl-accent: #ff7518; --itl-ember: #b347d9; }
+  .itl-wrap.itl-halloween .itl-eyebrow, .itl-wrap.itl-halloween .itl-tag { color: #b347d9; }
+  .itl-wrap.itl-halloween .itl-eyebrow::before { background: #ff7518; box-shadow: 0 0 0 3px color-mix(in srgb, #ff7518 25%, transparent); }
+  .itl-pumpkin { display: none; position: absolute; top: -6px; right: -6px; font-size: 1.3rem; transform: rotate(12deg); }
+  .itl-wrap.itl-halloween .itl-pumpkin { display: block; }
+  .itl-eyebrow, .itl-tag { position: relative; }
+</style>
+<script>
+  (function () {
+    try {
+      var d = new Date(), m = d.getMonth(), day = d.getDate();
+      var inWindow = (m === 9 && day >= 25) || (m === 10 && day === 1);
+      if (inWindow) {
+        document.querySelectorAll('.itl-wrap').forEach(function (el) { el.classList.add('itl-halloween'); });
+      }
+    } catch (e) {}
+  })();
+</script>
 </div>
 {{template "base/footer" .}}
