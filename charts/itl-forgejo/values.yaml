@@ -14,6 +14,18 @@
 # light (cache/session/queue for a single instance), so a single-replica
 # in-cluster Redis is plenty; no need for a managed/external one here.
 
+# Idempotently seeded via the Forgejo REST API by a post-install/
+# post-upgrade Helm hook Job (templates/seed-organizations-job.yaml) -
+# there's no CLI or CRD for this, confirmed via `forgejo admin --help`
+# (only user/auth/sendmail/etc, no org subcommand). Safe to add orgs
+# here at any time; existing ones are left untouched (checked via a
+# GET first, only POSTs on 404).
+organizations: []
+# organizations:
+#   - name: itlusions
+#     fullName: "ITlusions"
+#     visibility: private   # public, limited, or private
+
 # In-cluster Redis for Forgejo's cache/session/queue — plain
 # Deployment+PVC+Service (templates/redis.yaml), not a chart dependency
 # (avoids the Bitnami images-behind-a-subscription issue). Single replica,
