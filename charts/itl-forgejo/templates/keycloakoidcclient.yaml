@@ -1,0 +1,26 @@
+{{- if .Values.oidc.enabled }}
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakOIDCClient
+metadata:
+  name: {{ .Values.oidc.clientId }}
+  namespace: {{ .Values.oidc.keycloakNamespace }}
+  labels:
+    app.kubernetes.io/name: forgejo
+spec:
+  keycloakCRName: {{ .Values.oidc.keycloakCRName }}
+  realm: {{ .Values.oidc.realm }}
+  client:
+    displayName: {{ .Values.oidc.displayName | quote }}
+    description: "Forgejo - self-hosted git"
+    enabled: true
+    loginFlows: ["STANDARD"]
+    redirectUris:
+      {{- toYaml .Values.oidc.redirectUris | nindent 6 }}
+    webOrigins:
+      {{- toYaml .Values.oidc.webOrigins | nindent 6 }}
+    auth:
+      method: client-secret
+      secretRef:
+        name: forgejo-oidc-secret
+        key: client-secret
+{{- end }}

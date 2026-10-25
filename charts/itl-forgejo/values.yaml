@@ -62,6 +62,34 @@ adminSecret:
   username: ""
   email: admin@itlusions.com
 
+# OIDC login via the shared Keycloak (itl-keycloak), same instance
+# Headscale/Headplane/the website use. templates/keycloakoidcclient.yaml
+# creates the client, templates/oidc-secret.yaml generates its secret
+# once (stable across upgrades, same lookup idiom as adminSecret above)
+# and mirrors it into BOTH namespaces that need it: itl-keycloak (so the
+# Keycloak Operator uses it as the client's actual secret - it reads an
+# existing secretRef rather than overwriting it) and forgejo (so Gitea's
+# own oauth.existingSecret below can read it). This avoids the
+# chicken-and-egg problem of the Operator creating its own secret
+# asynchronously after this Helm install already finished - we decide
+# the value synchronously instead, and the Operator just adopts it.
+oidc:
+  enabled: true
+  clientId: forgejo
+  # The provider "name" Gitea uses in its callback path
+  # (/user/oauth2/<name>/callback) - kept lowercase, separate from
+  # clientId in case they ever need to differ.
+  providerName: keycloak
+  keycloakCRName: itl-keycloak
+  keycloakNamespace: itl-keycloak
+  realm: itlusions
+  issuer: "https://sts.itlusions.com/realms/itlusions"
+  displayName: "Forgejo"
+  redirectUris:
+    - "https://git.itlusions.com/user/oauth2/keycloak/callback"
+  webOrigins:
+    - "https://git.itlusions.com"
+
 forgejo:
   ingress:
     enabled: true
@@ -97,6 +125,15 @@ forgejo:
   gitea:
     admin:
       existingSecret: forgejo-admin-secret
+
+    # Declarative OIDC login via Keycloak - see `oidc:` above /
+    # templates/keycloakoidcclient.yaml + templates/oidc-secret.yaml for
+    # where forgejo-oauth-secret (key/secret) comes from.
+    oauth:
+      - name: keycloak
+        provider: openidConnect
+        existingSecret: forgejo-oauth-secret
+        autoDiscoverUrl: "https://sts.itlusions.com/realms/itlusions/.well-known/openid-configuration"
 
     config:
       server:
