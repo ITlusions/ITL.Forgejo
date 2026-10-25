@@ -150,8 +150,10 @@
   .itl-spooky-only { display: none; }
   .itl-wrap.itl-halloween .itl-spooky-only { display: inline; }
   .itl-wrap.itl-halloween { --itl-accent: #ff7518; }
-  .itl-wrap.itl-halloween .itl-tag { background: #b347d9; color: #fff; }
-  .itl-wrap.itl-halloween .itl-tag::before { background: #ff7518; }
+  .itl-wrap.itl-halloween .itl-tag { background: #ff7518; color: #1a0f00; }
+  /* The tag dot means "operational" (green = healthy) - stays green
+     during Halloween too, it's a status indicator, not a decorative
+     accent. */
   .itl-pumpkin { display: none; position: absolute; top: -6px; right: -6px; font-size: 1.3rem; transform: rotate(12deg); }
   .itl-wrap.itl-halloween .itl-pumpkin { display: block; }
   .itl-tag { position: relative; }

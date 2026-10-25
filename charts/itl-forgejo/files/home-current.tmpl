@@ -152,9 +152,10 @@
      shown once the window passes. */
   .itl-spooky-only { display: none; }
   .itl-wrap.itl-halloween .itl-spooky-only { display: inline; }
-  .itl-wrap.itl-halloween { --itl-accent: #ff7518; --itl-ember: #b347d9; }
-  .itl-wrap.itl-halloween .itl-eyebrow, .itl-wrap.itl-halloween .itl-tag { color: #b347d9; }
-  .itl-wrap.itl-halloween .itl-eyebrow::before { background: #ff7518; box-shadow: 0 0 0 3px color-mix(in srgb, #ff7518 25%, transparent); }
+  .itl-wrap.itl-halloween { --itl-accent: #ff7518; --itl-ember: #ff8c1a; }
+  /* The eyebrow dot means "operational" (green = healthy) - stays
+     green during Halloween too, it's a status indicator, not a
+     decorative accent. */
   .itl-pumpkin { display: none; position: absolute; top: -6px; right: -6px; font-size: 1.3rem; transform: rotate(12deg); }
   .itl-wrap.itl-halloween .itl-pumpkin { display: block; }
   .itl-eyebrow, .itl-tag { position: relative; }
