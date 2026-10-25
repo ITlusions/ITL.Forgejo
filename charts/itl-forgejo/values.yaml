@@ -160,6 +160,10 @@ forgejo:
       # ----------------------------------------------------------------
       service:
         DISABLE_REGISTRATION: true
+        # This is a company-internal git server, not a public-facing
+        # one - defaults to false (anyone can browse repos/code/issues
+        # with no account at all). Requires login for everything.
+        REQUIRE_SIGNIN_VIEW: true
 
       server:
         # git.itlusions.com is the primary/canonical host (repo clone
@@ -168,6 +172,18 @@ forgejo:
         DOMAIN: git.itlusions.com
         ROOT_URL: "https://git.itlusions.com"
         SSH_DOMAIN: git.itlusions.com
+
+      # ----------------------------------------------------------------
+      # Already true by default (confirmed via the config cheat sheet -
+      # no [actions] section exists at all in app.ini until something
+      # overrides it), pinned explicitly for the same reason as the
+      # other settings here. This only turns on the Actions feature
+      # itself (the tab, workflow YAML support) - without a registered
+      # runner, workflows just queue and never execute. No runner is
+      # wired up yet.
+      # ----------------------------------------------------------------
+      actions:
+        ENABLED: true
 
       # ----------------------------------------------------------------
       # Anyone with a valid Keycloak account can auto-provision a
@@ -210,6 +226,12 @@ forgejo:
       session:
         PROVIDER: redis
         PROVIDER_CONFIG: "redis://forgejo-redis.forgejo.svc.cluster.local:6379/1"
+        # Gitea's internal listener is plain HTTP (PROTOCOL=http below
+        # is correct - TLS terminates at Traefik, not here), so Gitea
+        # has no way to know the browser's hop is actually HTTPS and
+        # doesn't mark session cookies Secure by default. Pinned
+        # explicitly since the browser always sees HTTPS via ingress.
+        COOKIE_SECURE: true
       queue:
         TYPE: redis
         CONN_STR: "redis://forgejo-redis.forgejo.svc.cluster.local:6379/2"
