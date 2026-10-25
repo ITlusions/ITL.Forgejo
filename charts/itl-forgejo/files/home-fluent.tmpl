@@ -1,0 +1,144 @@
+{{template "base/head" .}}
+<div role="main" aria-label="{{ctx.Locale.Tr "home"}}" class="page-content home itl-landing">
+<style>
+  /* Namespaced to itl-landing so nothing here collides with Forgejo's
+     own Fomantic UI classes. Fonts via @import since this markup lives
+     in <body>, not <head>. ITlusions brand tokens (gold accent,
+     Raleway/Poppins) with a Windows 11 Fluent PowerShell window as the
+     hero's visual centerpiece. */
+  @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@600;700;800&family=Poppins:wght@400;500;600&family=Ubuntu+Mono:wght@400;700&display=swap');
+
+  .itl-landing {
+    --itl-surface: color-mix(in srgb, var(--color-body) 97%, #fff);
+    --itl-surface-alt: color-mix(in srgb, var(--color-body) 94%, #fff);
+    --itl-border: var(--color-secondary-light-2, #4443);
+    --itl-muted: var(--color-text-light-2, #999);
+    --itl-accent: #ffc451;
+    --itl-accent-ink: #151515;
+    --itl-ok: #107c10;
+  }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="forgejo-light"]) .itl-landing { --itl-ok: #6cc644; }
+  }
+  html[data-theme="forgejo-dark"] .itl-landing { --itl-ok: #6cc644; }
+
+  .itl-landing .itl-wrap { max-width: 1060px; margin: 0 auto; padding: 24px 16px 8px; }
+  .itl-landing h1, .itl-landing h3 { font-family: 'Raleway', sans-serif; }
+  .itl-landing code, .itl-landing .itl-mono { font-family: 'Ubuntu Mono', ui-monospace, monospace; }
+
+  .itl-hero { padding-block: 20px 48px; display: grid; gap: 40px; grid-template-columns: 1fr 1fr; align-items: center; }
+  .itl-tag { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--itl-accent-ink); background: var(--itl-accent); display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 999px; margin-bottom: 18px; }
+  .itl-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--itl-ok); }
+  .itl-headline { font-size: clamp(2rem, 4vw, 2.7rem); line-height: 1.12; margin: 0; }
+  .itl-sub { margin-top: 18px; font-size: 1.02rem; line-height: 1.65; max-width: 42ch; color: inherit; }
+  .itl-cta-row { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+  .itl-btn {
+    font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.86rem;
+    padding: 10px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 9px;
+    text-decoration: none; background: var(--itl-accent); color: var(--itl-accent-ink);
+  }
+  .itl-btn:hover { color: var(--itl-accent-ink); filter: brightness(1.05); }
+
+  .itl-fluent-win { border-radius: 12px; overflow: hidden; box-shadow: 0 24px 48px -20px rgba(0,0,0,0.28), 0 0 0 1px rgba(0,0,0,0.06); }
+  .itl-fluent-tbar { height: 38px; display: flex; align-items: center; justify-content: space-between; padding-left: 14px; background: var(--itl-surface); backdrop-filter: blur(8px); border-bottom: 1px solid var(--itl-border); }
+  .itl-fluent-tbar .itl-ttl { display: flex; align-items: center; gap: 8px; font-family: 'Poppins', sans-serif; font-size: 0.8rem; }
+  .itl-fluent-tbar .itl-ico { width: 14px; height: 14px; border-radius: 3px; background: var(--itl-accent); }
+  .itl-fluent-tbar .itl-ctrl { display: flex; height: 100%; }
+  .itl-fluent-tbar .itl-ctrl button { width: 46px; height: 38px; border: none; background: transparent; display: grid; place-items: center; cursor: default; }
+  .itl-fluent-tbar .itl-ctrl button:hover { background: rgba(127,127,127,0.15); }
+  .itl-fluent-tbar .itl-ctrl button.itl-x:hover { background: #e81123; }
+  .itl-fluent-tbar .itl-ctrl button.itl-x:hover svg line { stroke: #fff; }
+  .itl-fluent-tbar .itl-ctrl svg { width: 10px; height: 10px; }
+  .itl-fluent-tbar .itl-ctrl svg line, .itl-fluent-tbar .itl-ctrl svg rect { stroke: currentColor; }
+  .itl-fluent-body { background: #0c0c0c; color: #e8e8e8; font-family: 'Ubuntu Mono', monospace; font-size: 0.86rem; line-height: 2; padding: 20px; }
+  .itl-fluent-body .itl-p { color: #7a7a7a; }
+  .itl-fluent-body .itl-c { color: var(--itl-accent); }
+  .itl-fluent-body .itl-ok { color: #6cc644; }
+  .itl-fluent-body .itl-cursor { display: inline-block; width: 7px; height: 14px; background: #e8e8e8; vertical-align: -2px; animation: itl-blink 1.1s step-end infinite; }
+  @keyframes itl-blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .itl-fluent-body .itl-cursor { animation: none; } }
+
+  .itl-strip-label { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--itl-muted); padding-top: 8px; padding-bottom: 16px; border-top: 1px solid var(--itl-border); }
+  .itl-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 36px; }
+  .itl-cell { background: var(--itl-surface); border: 1px solid var(--itl-border); border-radius: 12px; padding: 20px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .itl-cell .itl-ic { width: 32px; height: 32px; border-radius: 8px; background: var(--itl-surface-alt); display: grid; place-items: center; color: var(--itl-accent-ink); }
+  .itl-cell .itl-ic svg { width: 17px; height: 17px; }
+  .itl-cell h3 { font-size: 0.96rem; font-weight: 700; font-family: 'Poppins', sans-serif; margin: 0; }
+  .itl-cell p { margin: 0; font-size: 0.85rem; color: var(--itl-muted); line-height: 1.5; }
+
+  .itl-hosts { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; }
+  .itl-host-pill { display: flex; align-items: center; gap: 8px; font-family: 'Ubuntu Mono', monospace; font-size: 0.8rem; padding: 8px 13px; border: 1px solid var(--itl-border); border-radius: 999px; background: var(--itl-surface); color: var(--itl-muted); }
+  .itl-host-pill .itl-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--itl-ok); }
+
+  @media (max-width: 760px) {
+    .itl-hero { grid-template-columns: 1fr; }
+    .itl-grid4 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<div class="itl-wrap">
+  <section class="itl-hero">
+    <div>
+      <div class="itl-tag">git.itlusions.com &middot; operational</div>
+      <h1 class="itl-headline">The team's git, on the cluster you'd expect.</h1>
+      <p class="itl-sub">Self-hosted Forgejo running on the Talos Kubernetes cluster, backed by a CloudNativePG Postgres cluster and single sign-on through Keycloak. No public registration, no anonymous browsing &mdash; every repository here belongs to someone on the team.</p>
+      <div class="itl-cta-row">
+        <a class="itl-btn" href="{{AppSubUrl}}/user/login">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-6 8-6s6.5 1.5 8 6"/></svg>
+          Sign in with Keycloak
+        </a>
+      </div>
+    </div>
+
+    <div class="itl-fluent-win">
+      <div class="itl-fluent-tbar">
+        <div class="itl-ttl"><span class="itl-ico"></span>Windows PowerShell</div>
+        <div class="itl-ctrl">
+          <button><svg viewBox="0 0 10 10"><line x1="0" y1="5" x2="10" y2="5" stroke-width="1"/></svg></button>
+          <button><svg viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke-width="1"/></svg></button>
+          <button class="itl-x"><svg viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke-width="1"/><line x1="10" y1="0" x2="0" y2="10" stroke-width="1"/></svg></button>
+        </div>
+      </div>
+      <div class="itl-fluent-body">
+        <div><span class="itl-p">PS C:\projects&gt;</span> git clone <span class="itl-c">git@git.itlusions.com</span>:itlusions/itl.cnpg.git</div>
+        <div class="itl-ok">Cloning into 'itl.cnpg'...</div>
+        <div class="itl-ok">remote: Enumerating objects: 41, done.</div>
+        <div class="itl-ok">Resolving deltas: 100% (18/18), done.</div>
+        <div><span class="itl-p">PS C:\projects&gt;</span> <span class="itl-cursor"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="itl-strip-label">Running on</div>
+  <div class="itl-grid4">
+    <div class="itl-cell">
+      <span class="itl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-6 8-6s6.5 1.5 8 6"/></svg></span>
+      <h3>Keycloak SSO</h3>
+      <p>Account creation only through the identity provider &mdash; local registration is disabled.</p>
+    </div>
+    <div class="itl-cell">
+      <span class="itl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></span>
+      <h3>CloudNativePG</h3>
+      <p>Two-instance Postgres cluster, in-cluster only, provisioned alongside this instance.</p>
+    </div>
+    <div class="itl-cell">
+      <span class="itl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></span>
+      <h3>Forgejo Actions</h3>
+      <p>Workflow support is on. Jobs queue until a runner is registered to execute them.</p>
+    </div>
+    <div class="itl-cell">
+      <span class="itl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg></span>
+      <h3>Talos Kubernetes</h3>
+      <p>Deployed as a Helm wrapper chart on the bare-metal cluster, Redis-backed sessions and queue.</p>
+    </div>
+  </div>
+
+  <div class="itl-hosts">
+    <span class="itl-host-pill"><span class="itl-dot"></span>git.itlusions.com</span>
+    <span class="itl-host-pill"><span class="itl-dot"></span>git.dev.itlusions.com</span>
+    <span class="itl-host-pill"><span class="itl-dot"></span>git.itlusions.nl</span>
+    <span class="itl-host-pill"><span class="itl-dot"></span>git.dev.itlusions.nl</span>
+  </div>
+</div>
+</div>
+{{template "base/footer" .}}

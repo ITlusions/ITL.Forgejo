@@ -21,12 +21,19 @@
 # here at any time; existing ones are left untouched (checked via a
 # GET first, only POSTs on 404).
 # Overrides the anonymous-visitor landing page with a custom
-# templates/custom-home-configmap.yaml (source: files/home.tmpl) -
-# only the hero/content area changes, the real top nav and footer are
-# untouched. Only ever seen signed out - Forgejo redirects signed-in
-# users to their dashboard before home.tmpl is reached.
+# templates/custom-home-configmap.yaml - only the hero/content area
+# changes, the real top nav and footer are untouched. Only ever seen
+# signed out - Forgejo redirects signed-in users to their dashboard
+# before home.tmpl is reached.
+#
+# style picks which source file to deploy, files/home-<style>.tmpl:
+#   current - terminal panel, forge/ember palette (the original redesign)
+#   fluent  - Windows 11 Fluent PowerShell window, ITlusions brand
+#             (gold accent, Raleway/Poppins)
+# Switching is a one-line values change + helm upgrade, no code edit.
 customHomepage:
   enabled: true
+  style: current
 
 organizations: []
 # organizations:
