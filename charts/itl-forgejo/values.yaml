@@ -41,6 +41,18 @@ organizations: []
 #     fullName: "ITlusions"
 #     visibility: private   # public, limited, or private
 
+# Redirects every non-canonical ingress host to canonicalHost instead
+# of each one independently serving the same content - see
+# templates/redirect.yaml. hosts here must stay in sync with
+# forgejo.ingress.hosts/tls (minus the canonical host itself).
+redirectToCanonical:
+  enabled: true
+  canonicalHost: git.itlusions.com
+  hosts:
+    - git.dev.itlusions.com
+    - git.itlusions.nl
+    - git.dev.itlusions.nl
+
 # In-cluster Redis for Forgejo's cache/session/queue — plain
 # Deployment+PVC+Service (templates/redis.yaml), not a chart dependency
 # (avoids the Bitnami images-behind-a-subscription issue). Single replica,
@@ -112,21 +124,15 @@ oidc:
   realm: itlusions
   issuer: "https://sts.itlusions.com/realms/itlusions"
   displayName: "Forgejo"
-  # One entry per ingress host (see forgejo.ingress.hosts below) -
-  # Gitea builds its OAuth callback URL from the actual request host,
-  # not just the canonical DOMAIN/ROOT_URL, so logging in via any of
-  # these hosts needs its own redirect URI registered with Keycloak or
-  # the callback gets rejected.
+  # Canonical host only - the other 3 (git.dev.itlusions.com,
+  # git.itlusions.nl, git.dev.itlusions.nl) now redirect to this one
+  # before ever reaching Forgejo (see templates/redirect.yaml), so a
+  # login flow never actually originates from them anymore. Fewer
+  # registered redirect URIs is also a smaller attack surface.
   redirectUris:
     - "https://git.itlusions.com/user/oauth2/keycloak/callback"
-    - "https://git.dev.itlusions.com/user/oauth2/keycloak/callback"
-    - "https://git.itlusions.nl/user/oauth2/keycloak/callback"
-    - "https://git.dev.itlusions.nl/user/oauth2/keycloak/callback"
   webOrigins:
     - "https://git.itlusions.com"
-    - "https://git.dev.itlusions.com"
-    - "https://git.itlusions.nl"
-    - "https://git.dev.itlusions.nl"
 
 forgejo:
   ingress:
@@ -141,23 +147,15 @@ forgejo:
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-issuer"
       traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+      traefik.ingress.kubernetes.io/router.middlewares: forgejo-redirect-https@kubernetescrd
+    # git.itlusions.com only - the real app. The other 3 hosts
+    # (git.dev.itlusions.com, git.itlusions.nl, git.dev.itlusions.nl)
+    # used to independently serve the same content (bad for SEO -
+    # duplicate content across hosts - and inconsistent with
+    # gitea.config.server.ROOT_URL already being pinned to this host).
+    # They now redirect here instead - see templates/redirect.yaml.
     hosts:
       - host: git.itlusions.com
-        paths:
-          - path: /
-            pathType: Prefix
-            port: http
-      - host: git.dev.itlusions.com
-        paths:
-          - path: /
-            pathType: Prefix
-            port: http
-      - host: git.itlusions.nl
-        paths:
-          - path: /
-            pathType: Prefix
-            port: http
-      - host: git.dev.itlusions.nl
         paths:
           - path: /
             pathType: Prefix
@@ -166,15 +164,6 @@ forgejo:
       - secretName: git-itlusions-com-tls
         hosts:
           - git.itlusions.com
-      - secretName: git-itlusions-nl-tls
-        hosts:
-          - git.itlusions.nl
-      - secretName: git-dev-itlusions-nl-tls
-        hosts:
-          - git.dev.itlusions.nl
-      - secretName: git-dev-itlusions-com-tls
-        hosts:
-          - git.dev.itlusions.com
 
   gitea:
     admin:

@@ -1,0 +1,72 @@
+{{- if .Values.redirectToCanonical.enabled }}
+# The other 3 ingress hosts (git.dev.itlusions.com, git.itlusions.nl,
+# git.dev.itlusions.nl) used to independently serve the same content
+# as git.itlusions.com - bad for SEO (duplicate content across hosts)
+# and inconsistent with gitea.config.server.ROOT_URL already being
+# pinned to the canonical host. They redirect here instead, 301
+# permanent, path and query preserved. Regex doesn't need to exclude
+# the canonical host - this Ingress below only ever receives traffic
+# for the other 3, since git.itlusions.com itself is routed by the
+# separate Ingress the upstream forgejo-helm chart creates.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-to-canonical
+  labels:
+    app.kubernetes.io/name: forgejo
+spec:
+  redirectRegex:
+    # https? - must match plain HTTP too, not just HTTPS, or an http://
+    # request to a non-canonical host would silently fall through to
+    # the backend over plain HTTP instead of being redirected at all.
+    regex: "^https?://[^/]+(.*)"
+    replacement: "https://{{ .Values.redirectToCanonical.canonicalHost }}${1}"
+    permanent: true
+---
+# Forces HTTP -> HTTPS on the canonical host too - referenced from
+# forgejo.ingress.annotations below (the upstream forgejo-helm chart's
+# own ingress, not this chart's). Same redirectScheme pattern as
+# itl-website's own "enforce-tls" middleware.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  labels:
+    app.kubernetes.io/name: forgejo
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-redirect
+  labels:
+    app.kubernetes.io/name: forgejo
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-issuer"
+    traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-redirect-to-canonical@kubernetescrd
+spec:
+  ingressClassName: itl-traefik
+  rules:
+    {{- range .Values.redirectToCanonical.hosts }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $.Release.Name }}-http
+                port:
+                  number: 3000
+    {{- end }}
+  tls:
+    {{- range .Values.redirectToCanonical.hosts }}
+    - secretName: {{ . | replace "." "-" }}-tls
+      hosts:
+        - {{ . | quote }}
+    {{- end }}
+{{- end }}
