@@ -198,9 +198,12 @@
      offer) use it as their text color on an --itl-accent background,
      and dark text on this orange reads poorly. */
   .itl-wrap.itl-halloween { --itl-accent: #ff7518; --itl-accent-ink: #fff6ee; }
-  /* No color change on the tag at all - stays its normal style, the
-     pumpkin emoji prefix and the hero decoration are the only
-     Halloween signal here. */
+  /* The tag reads --itl-accent/--itl-accent-ink, both shifted above
+     for the buttons - pin it back to the normal brand gold explicitly,
+     or it inherits the shift too. Stays fully normal: the pumpkin
+     emoji prefix and the hero decoration are the only Halloween
+     signal here. */
+  .itl-wrap.itl-halloween .itl-tag { background: #ffc451; color: #151515; }
   /* The tag dot means "operational" (green = healthy) - stays green
      during Halloween too, it's a status indicator, not a decorative
      accent. */
