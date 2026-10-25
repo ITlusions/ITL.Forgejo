@@ -136,6 +136,19 @@ forgejo:
         autoDiscoverUrl: "https://sts.itlusions.com/realms/itlusions/.well-known/openid-configuration"
 
     config:
+      # ----------------------------------------------------------------
+      # Local self-registration (plain username/password, no Keycloak
+      # involved) defaults to OPEN in Forgejo - confirmed via the config
+      # cheat sheet, DISABLE_REGISTRATION defaults to false. Anyone could
+      # otherwise visit the site and click "Register" to create their
+      # own account, completely bypassing the Keycloak OIDC login above.
+      # SHOW_REGISTRATION_BUTTON isn't set separately - it defaults to
+      # the inverse of DISABLE_REGISTRATION, so the button disappears on
+      # its own.
+      # ----------------------------------------------------------------
+      service:
+        DISABLE_REGISTRATION: true
+
       server:
         # git.itlusions.com is the primary/canonical host (repo clone
         # URLs, SSH) - git.dev.itlusions.com above is just a second
@@ -145,16 +158,15 @@ forgejo:
         SSH_DOMAIN: git.itlusions.com
 
       # ----------------------------------------------------------------
-      # Explicitly pinned, not left to the stock default (confirmed false
-      # as of Forgejo's own config cheat sheet, forgejo.org/docs/latest/
-      # admin/config-cheat-sheet/) - an unknown user who successfully
-      # authenticates via the Keycloak OIDC login above must NOT get a
-      # Forgejo account auto-created. Account creation stays an explicit,
-      # separate admin action. Pinning this here means it can't silently
-      # change if the upstream default ever does.
+      # Anyone with a valid Keycloak account can auto-provision a
+      # Forgejo account on first SSO login - Keycloak is the actual
+      # gate (it decides who's a known user), not Forgejo itself.
+      # What must stay closed is anonymous local registration with no
+      # identity check at all - that's service.DISABLE_REGISTRATION
+      # above, not this setting.
       # ----------------------------------------------------------------
       oauth2_client:
-        ENABLE_AUTO_REGISTRATION: false
+        ENABLE_AUTO_REGISTRATION: true
 
       # ----------------------------------------------------------------
       # In-cluster CNPG Postgres (see `postgresql:` above /
