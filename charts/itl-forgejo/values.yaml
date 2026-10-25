@@ -53,7 +53,13 @@ postgresql:
 # yourself if you'd rather provide a specific password.
 adminSecret:
   create: true
-  username: admin
+  # Empty = auto-generate a fantasy adjective-animal username
+  # (admin-rubberduck style) on first install - see
+  # templates/admin-secret.yaml. Set a value here to use a fixed one
+  # instead. Either way, NOT "admin" - that's a reserved Gitea/Forgejo
+  # username (collides with the /admin dashboard route), confirmed live:
+  # "CreateUser: name is reserved [name: admin]".
+  username: ""
   email: admin@itlusions.com
 
 forgejo:
