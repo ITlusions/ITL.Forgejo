@@ -14,6 +14,8 @@ as `ITL.Gitlab` and `rustdesk-server`.
   (https://codeberg.org/forgejo-contrib/forgejo-helm), now archived there —
   active development and the OCI registry moved to code.forgejo.org.
 
+Further docs (plans, deeper write-ups) live in [`docs/`](docs/).
+
 ## Not quite deploy-ready
 
 Unlike `gitlab/gitlab`, this chart does **not** hard-require external
