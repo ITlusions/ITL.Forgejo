@@ -145,6 +145,18 @@ forgejo:
         SSH_DOMAIN: git.itlusions.com
 
       # ----------------------------------------------------------------
+      # Explicitly pinned, not left to the stock default (confirmed false
+      # as of Forgejo's own config cheat sheet, forgejo.org/docs/latest/
+      # admin/config-cheat-sheet/) - an unknown user who successfully
+      # authenticates via the Keycloak OIDC login above must NOT get a
+      # Forgejo account auto-created. Account creation stays an explicit,
+      # separate admin action. Pinning this here means it can't silently
+      # change if the upstream default ever does.
+      # ----------------------------------------------------------------
+      oauth2_client:
+        ENABLE_AUTO_REGISTRATION: false
+
+      # ----------------------------------------------------------------
       # In-cluster CNPG Postgres (see `postgresql:` above /
       # templates/cnpg-cluster.yaml). HOST is CNPG's deterministic
       # read-write service name, <release>-db-rw — assumes this chart is
