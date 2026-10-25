@@ -20,6 +20,14 @@
 # (only user/auth/sendmail/etc, no org subcommand). Safe to add orgs
 # here at any time; existing ones are left untouched (checked via a
 # GET first, only POSTs on 404).
+# Overrides the anonymous-visitor landing page with a custom
+# templates/custom-home-configmap.yaml (source: files/home.tmpl) -
+# only the hero/content area changes, the real top nav and footer are
+# untouched. Only ever seen signed out - Forgejo redirects signed-in
+# users to their dashboard before home.tmpl is reached.
+customHomepage:
+  enabled: true
+
 organizations: []
 # organizations:
 #   - name: itlusions
@@ -281,3 +289,16 @@ forgejo:
     size: 10Gi
     # TODO: confirm this matches an actual StorageClass in the cluster
     storageClass: ""
+
+  # Mounts the custom home.tmpl (see customHomepage above /
+  # templates/custom-home-configmap.yaml) at the exact path Forgejo
+  # checks before falling back to its built-in template.
+  extraVolumes:
+    - name: custom-home-template
+      configMap:
+        name: forgejo-custom-home-template
+  extraContainerVolumeMounts:
+    - name: custom-home-template
+      mountPath: /data/gitea/templates/home.tmpl
+      subPath: home.tmpl
+      readOnly: true

@@ -1,0 +1,143 @@
+{{template "base/head" .}}
+<div role="main" aria-label="{{ctx.Locale.Tr "home"}}" class="page-content home itl-landing">
+<style>
+  /* Namespaced to itl-landing so nothing here collides with Forgejo's
+     own Fomantic UI classes (.hero, .btn, .grid, etc. are already in
+     use site-wide). Fonts loaded via @import since this markup lives
+     in <body>, not <head> - a <link> here would be invalid HTML. */
+  @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  .itl-landing {
+    --itl-bg-raised: color-mix(in srgb, var(--color-body) 96%, var(--color-primary));
+    --itl-border: var(--color-secondary-light-2, #4443);
+    --itl-fg-muted: var(--color-text-light-2, #999);
+    --itl-accent: #c4511f;
+    --itl-ember: #e8954a;
+    --itl-slate: #3c5a63;
+    --itl-ok: #3f7a52;
+  }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="forgejo-light"]) .itl-landing {
+      --itl-accent: #e8702f; --itl-ember: #f0a85c; --itl-slate: #6f98a1; --itl-ok: #6fb785;
+    }
+  }
+  html[data-theme="forgejo-dark"] .itl-landing {
+    --itl-accent: #e8702f; --itl-ember: #f0a85c; --itl-slate: #6f98a1; --itl-ok: #6fb785;
+  }
+
+  .itl-landing .itl-wrap { max-width: 1040px; margin: 0 auto; padding: 32px 16px 8px; }
+  .itl-landing h1, .itl-landing h2, .itl-landing h3 { font-family: 'Unbounded', system-ui, sans-serif; }
+  .itl-landing code, .itl-landing .itl-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  .itl-hero { display: grid; gap: 34px; grid-template-columns: 1.1fr 0.9fr; align-items: center; padding-bottom: 48px; }
+  .itl-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--itl-ember); display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  }
+  .itl-eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--itl-ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--itl-ok) 25%, transparent); }
+  .itl-headline { font-size: clamp(2rem, 4.4vw, 3rem); line-height: 1.08; letter-spacing: -0.01em; margin: 0; }
+  .itl-headline em { font-style: normal; color: var(--itl-accent); }
+  .itl-sub { margin-top: 18px; font-size: 1.08rem; line-height: 1.6; color: var(--itl-fg-muted); max-width: 46ch; font-family: 'Public Sans', system-ui, sans-serif; }
+  .itl-cta-row { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+  .itl-btn {
+    font-family: 'Public Sans', system-ui, sans-serif; font-weight: 600; font-size: 0.92rem;
+    padding: 10px 18px; border-radius: 8px; border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 9px; text-decoration: none; cursor: pointer;
+  }
+  .itl-btn-accent { background: var(--itl-accent); color: #fff6ee; }
+  .itl-btn-accent:hover { filter: brightness(1.08); color: #fff6ee; }
+  .itl-btn-ghost { background: transparent; color: inherit; border-color: var(--itl-border); }
+  .itl-btn-ghost:hover { border-color: var(--itl-fg-muted); color: inherit; }
+
+  .itl-term { background: var(--itl-bg-raised); border: 1px solid var(--itl-border); border-radius: 12px; overflow: hidden; }
+  .itl-term-bar { display: flex; align-items: center; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--itl-border); }
+  .itl-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--itl-border); }
+  .itl-term-title { margin-left: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--itl-fg-muted); }
+  .itl-term-body { padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; line-height: 1.85; }
+  .itl-term-body .itl-p { color: var(--itl-fg-muted); }
+  .itl-term-body .itl-c { color: var(--itl-accent); }
+  .itl-term-body .itl-ok { color: var(--itl-ok); }
+
+  .itl-strip-label { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--itl-fg-muted); padding-top: 12px; padding-bottom: 16px; border-top: 1px solid var(--itl-border); }
+  .itl-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--itl-border); border: 1px solid var(--itl-border); border-radius: 12px; overflow: hidden; margin-bottom: 36px; }
+  .itl-cell { background: var(--itl-bg-raised); padding: 22px 18px; display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+  .itl-cell svg { width: 28px; height: 28px; color: var(--itl-slate); }
+  .itl-cell h3 { font-size: 0.98rem; font-weight: 700; margin: 0; }
+  .itl-cell p { margin: 0; font-size: 0.86rem; color: var(--itl-fg-muted); line-height: 1.5; font-family: 'Public Sans', system-ui, sans-serif; }
+
+  .itl-hosts { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; }
+  .itl-host-pill {
+    display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+    padding: 8px 13px; border: 1px solid var(--itl-border); border-radius: 999px; background: var(--itl-bg-raised);
+    color: var(--itl-fg-muted);
+  }
+  .itl-host-pill .itl-ok-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--itl-ok); }
+
+  @media (max-width: 760px) {
+    .itl-hero { grid-template-columns: 1fr; }
+    .itl-grid4 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<div class="itl-wrap">
+  <section class="itl-hero">
+    <div>
+      <div class="itl-eyebrow">git.itlusions.com &middot; operational</div>
+      <h1 class="itl-headline">The team's git,<br>forged on <em>bare metal</em>.</h1>
+      <p class="itl-sub">Self-hosted Forgejo running on the Talos Kubernetes cluster, backed by a CloudNativePG Postgres cluster and single sign-on through Keycloak. No public registration, no anonymous browsing &mdash; every repository here belongs to someone on the team.</p>
+      <div class="itl-cta-row">
+        <a class="itl-btn itl-btn-accent" href="{{AppSubUrl}}/user/login">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-6 8-6s6.5 1.5 8 6"/></svg>
+          Sign in with Keycloak
+        </a>
+      </div>
+    </div>
+
+    <div class="itl-term">
+      <div class="itl-term-bar">
+        <span class="itl-dot"></span><span class="itl-dot"></span><span class="itl-dot"></span>
+        <span class="itl-term-title">~/projects</span>
+      </div>
+      <div class="itl-term-body">
+        <div><span class="itl-p">$</span> git clone <span class="itl-c">git@git.itlusions.com</span>:itlusions/itl.cnpg.git</div>
+        <div class="itl-ok">Cloning into 'itl.cnpg'...</div>
+        <div class="itl-ok">remote: Enumerating objects: 41, done.</div>
+        <div><span class="itl-p">$</span> git remote -v</div>
+        <div>origin&nbsp;&nbsp;git@git.itlusions.com:itlusions/itl.cnpg.git (fetch)</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="itl-strip-label">Running on</div>
+  <div class="itl-grid4">
+    <div class="itl-cell">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-6 8-6s6.5 1.5 8 6"/></svg>
+      <h3>Keycloak SSO</h3>
+      <p>Account creation only through the identity provider &mdash; local registration is disabled.</p>
+    </div>
+    <div class="itl-cell">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+      <h3>CloudNativePG</h3>
+      <p>Two-instance Postgres cluster, in-cluster only, provisioned alongside this instance.</p>
+    </div>
+    <div class="itl-cell">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>
+      <h3>Forgejo Actions</h3>
+      <p>Workflow support is on. Jobs queue until a runner is registered to execute them.</p>
+    </div>
+    <div class="itl-cell">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>
+      <h3>Talos Kubernetes</h3>
+      <p>Deployed as a Helm wrapper chart on the bare-metal cluster, Redis-backed sessions and queue.</p>
+    </div>
+  </div>
+
+  <div class="itl-hosts">
+    <span class="itl-host-pill"><span class="itl-ok-dot"></span>git.itlusions.com</span>
+    <span class="itl-host-pill"><span class="itl-ok-dot"></span>git.dev.itlusions.com</span>
+    <span class="itl-host-pill"><span class="itl-ok-dot"></span>git.itlusions.nl</span>
+    <span class="itl-host-pill"><span class="itl-ok-dot"></span>git.dev.itlusions.nl</span>
+  </div>
+</div>
+</div>
+{{template "base/footer" .}}

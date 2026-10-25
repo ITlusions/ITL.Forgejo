@@ -1,0 +1,20 @@
+{{- if .Values.customHomepage.enabled }}
+# Forgejo reads a template override from <custom_path>/templates/<name>.tmpl
+# before falling back to its built-in one (custom_path is /data/gitea in
+# this image, confirmed via the Custom path log line at pod startup) -
+# mounted below via forgejo.extraVolumes/extraContainerVolumeMounts.
+# Source: files/home.tmpl - only the content inside {{`{{template "base/head" .}}`}}
+# / {{`{{template "base/footer" .}}`}} changes; the real top nav and
+# footer are untouched, and this file only ever renders for signed-out
+# visitors (Forgejo redirects signed-in users to their dashboard before
+# home.tmpl is reached).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-custom-home-template
+  labels:
+    app.kubernetes.io/name: forgejo
+data:
+  home.tmpl: |
+{{ .Files.Get "files/home.tmpl" | indent 4 }}
+{{- end }}
