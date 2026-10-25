@@ -29,26 +29,28 @@ managed service.
 
 | Need | Source | Values.yaml key |
 |---|---|---|
-| PostgreSQL | External — CNPG cluster, see `ITL.CNPG.Cluster` | `forgejo.gitea.config.database.HOST` + `forgejo-postgresql-password` secret (still `CHANGEME-...`, needs real infra) |
+| PostgreSQL | In-cluster CNPG `Cluster`, bundled with this chart (`templates/cnpg-cluster.yaml`) — needs the CNPG operator already installed cluster-wide, see `itl.cnpg/operator` | `postgresql.*` (works out of the box — CNPG auto-creates the `forgejo` db/user and a `forgejo-db-app` Secret, nothing to provision by hand) |
 | Redis (cache/session/queue) | In-cluster, bundled with this chart | `redis.*` (works out of the box — nothing to provision) |
 | Admin user | — | `forgejo-admin-secret` (username/password/email keys) |
 
 The DB password is injected via `gitea.additionalConfigFromEnvs` (rendered
-as `GITEA__DATABASE__PASSWD`, sourced from a Secret) — nothing sensitive is
-in `values.yaml` itself. The in-cluster Redis has no auth configured (fine
-for an in-cluster-only, unexposed service).
+as `GITEA__DATABASE__PASSWD`, sourced from CNPG's own `forgejo-db-app`
+Secret) — nothing sensitive is in `values.yaml` itself. Postgres is
+in-cluster only by design (no ingress/`IngressRouteTCP` for it, reachable
+only via the `forgejo-db-rw` ClusterIP service CNPG generates) — the
+in-cluster Redis likewise has no auth configured (fine for an
+in-cluster-only, unexposed service).
 
 ## Prerequisites
 
-- The Secrets referenced above, created ahead of install:
+- The CNPG operator installed cluster-wide first (see `itl.cnpg/operator`)
+  — `templates/cnpg-cluster.yaml` here needs the `Cluster` CRD to exist.
+- The admin Secret, created ahead of install:
   ```bash
   kubectl create secret generic forgejo-admin-secret -n forgejo \
     --from-literal=username=admin \
     --from-literal=password='...' \
     --from-literal=email=admin@itlusions.com
-
-  kubectl create secret generic forgejo-postgresql-password -n forgejo \
-    --from-literal=password='...'
   ```
 - Traefik ingress controller + cert-manager with a working
   `letsencrypt-issuer` `ClusterIssuer` (already in place cluster-wide,
@@ -75,8 +77,9 @@ See `charts/itl-forgejo/values.yaml` for the full annotated list — in short:
   shape `gitlab/gitlab` has — no shared-secret collision to worry about
   here, unlike `ITL.Gitlab`)
 - `gitea.config.server.{DOMAIN,ROOT_URL,SSH_DOMAIN}` → matches the ingress host
-- `gitea.config.database` → external Postgres (placeholder host; password
-  via `additionalConfigFromEnvs` + Secret, not plaintext)
+- `gitea.config.database` → in-cluster CNPG Postgres (see `postgresql.*`
+  above); password via `additionalConfigFromEnvs` + CNPG's own Secret, not
+  plaintext
 - `redis.enabled: true` + `gitea.config.{cache,session,queue}` → points at
   the in-cluster Redis this chart deploys
   (`<release>-redis.<namespace>.svc.cluster.local`, hardcoded assuming

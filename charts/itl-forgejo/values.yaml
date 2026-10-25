@@ -29,6 +29,23 @@ redis:
     storageClass: ""
   resources: {}
 
+# In-cluster CNPG Postgres cluster (templates/cnpg-cluster.yaml), requires
+# the CNPG operator already installed cluster-wide (see itl.cnpg/operator).
+# No ingress/IngressRouteTCP - in-cluster only by design, reachable only
+# via the ClusterIP service CNPG generates (<release>-db-rw).
+# CNPG auto-creates the app user/database and a Secret named
+# "<release>-db-app" (keys: username, password, dbname, host, port,
+# uri, jdbc-uri) - no manual secret to create, unlike the old
+# "forgejo-postgresql-password" placeholder this replaces.
+postgresql:
+  enabled: true
+  instances: 2
+  database: forgejo
+  owner: forgejo
+  storage:
+    size: 5Gi
+    storageClass: "ha-dbs-lh"
+
 forgejo:
   ingress:
     enabled: true
@@ -64,19 +81,21 @@ forgejo:
         SSH_DOMAIN: forgejo.dev.itlusions.com
 
       # ----------------------------------------------------------------
-      # External PostgreSQL (recommended over the SQLite default for
-      # anything beyond a quick try-out). TODO: point at a real CNPG
-      # cluster — see ITL.CNPG.Cluster, same pattern as ITL.Gitlab.
+      # In-cluster CNPG Postgres (see `postgresql:` above /
+      # templates/cnpg-cluster.yaml). HOST is CNPG's deterministic
+      # read-write service name, <release>-db-rw — assumes this chart is
+      # installed as `forgejo` in the `forgejo` namespace, per this
+      # repo's README install command; adjust if installed differently.
       # ----------------------------------------------------------------
       database:
         DB_TYPE: postgres
-        HOST: "CHANGEME-postgresql-host:5432"
+        HOST: "forgejo-db-rw.forgejo.svc.cluster.local:5432"
         NAME: forgejo
         USER: forgejo
-        SSL_MODE: require
+        SSL_MODE: disable
         # PASSWD is intentionally not set here — see
-        # gitea.additionalConfigFromEnvs below, which injects it from a
-        # Secret instead of plaintext in values.
+        # gitea.additionalConfigFromEnvs below, which injects it from
+        # CNPG's auto-generated app Secret instead of plaintext in values.
 
       # ----------------------------------------------------------------
       # In-cluster Redis (see `redis:` above / templates/redis.yaml) for
@@ -95,17 +114,17 @@ forgejo:
         TYPE: redis
         CONN_STR: "redis://forgejo-redis.forgejo.svc.cluster.local:6379/2"
 
-    # Injects the DB password from a Secret as a GITEA__DATABASE__PASSWD
-    # env var, instead of embedding plaintext in this values file.
-    # TODO: create this secret first, e.g.:
-    #   kubectl create secret generic forgejo-postgresql-password -n forgejo \
-    #     --from-literal=password='...'
-    # (the in-cluster Redis above has no auth, so nothing needed for it)
+    # Injects the DB password from CNPG's auto-generated app Secret as a
+    # GITEA__DATABASE__PASSWD env var, instead of embedding plaintext in
+    # this values file or hand-creating a Secret — CNPG creates
+    # "<release>-db-app" itself from templates/cnpg-cluster.yaml's
+    # bootstrap.initdb. (The in-cluster Redis above has no auth, so
+    # nothing needed for it.)
     additionalConfigFromEnvs:
       - name: GITEA__DATABASE__PASSWD
         valueFrom:
           secretKeyRef:
-            name: forgejo-postgresql-password
+            name: forgejo-db-app
             key: password
 
   persistence:
