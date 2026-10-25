@@ -139,7 +139,52 @@
     <span class="itl-host-pill"><span class="itl-ok-dot"></span>git.itlusions.nl</span>
     <span class="itl-host-pill"><span class="itl-ok-dot"></span>git.dev.itlusions.nl</span>
   </div>
+
+  <details class="itl-offer">
+    <summary>Want this for your own cluster? <span class="itl-offer-arrow">&#8250;</span></summary>
+    <div class="itl-offer-body">
+      <h2>Sovereign git, implemented on your infrastructure</h2>
+      <p>This instance is the reference deployment, not a demo &mdash; self-hosted Forgejo, a CloudNativePG Postgres cluster, and Keycloak single sign-on, running on our own bare-metal Talos Kubernetes cluster. We implement the same stack on yours.</p>
+      <div class="itl-offer-grid">
+        <div>
+          <h3>What it replaces</h3>
+          <p>GitHub, GitLab.com, or any SaaS forge holding your source code, CI secrets, and org chart under foreign jurisdiction.</p>
+        </div>
+        <div>
+          <h3>What's included</h3>
+          <p>Forgejo hardened against anonymous registration and browsing, SSO wired to your identity provider, and an in-cluster Postgres cluster with auto-generated credentials.</p>
+        </div>
+        <div>
+          <h3>How it starts</h3>
+          <p>Tell us your cluster size and current identity provider; we scope the implementation against it.</p>
+        </div>
+      </div>
+      <a class="itl-offer-cta" href="mailto:hello@itlusions.com">Request an implementation offer</a>
+    </div>
+  </details>
 </div>
+
+<style>
+  .itl-offer { margin-bottom: 8px; border: 1px solid var(--itl-border); border-radius: 12px; background: var(--itl-bg-raised); overflow: hidden; }
+  .itl-offer summary {
+    list-style: none; cursor: pointer; padding: 16px 20px; font-family: 'Public Sans', sans-serif; font-weight: 600;
+    font-size: 0.92rem; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .itl-offer summary::-webkit-details-marker { display: none; }
+  .itl-offer-arrow { transition: transform 0.15s ease; color: var(--itl-fg-muted); }
+  .itl-offer[open] .itl-offer-arrow { transform: rotate(90deg); }
+  .itl-offer-body { padding: 4px 20px 24px; border-top: 1px solid var(--itl-border); }
+  .itl-offer-body h2 { font-size: 1.15rem; margin: 18px 0 8px; }
+  .itl-offer-body > p { font-size: 0.92rem; line-height: 1.6; color: var(--itl-fg-muted); max-width: 62ch; margin: 0 0 20px; }
+  .itl-offer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 22px; }
+  .itl-offer-grid h3 { font-size: 0.86rem; font-family: 'Public Sans', sans-serif; font-weight: 600; margin-bottom: 6px; }
+  .itl-offer-grid p { margin: 0; font-size: 0.83rem; color: var(--itl-fg-muted); line-height: 1.55; }
+  .itl-offer-cta {
+    display: inline-flex; align-items: center; font-family: 'Public Sans', sans-serif; font-weight: 600; font-size: 0.86rem;
+    padding: 10px 18px; border-radius: 8px; background: var(--itl-accent); color: #fff6ee; text-decoration: none;
+  }
+  @media (max-width: 700px) { .itl-offer-grid { grid-template-columns: 1fr; } }
+</style>
 
 <style>
   /* Client-side only, by design: Forgejo's template funcmap has no way
