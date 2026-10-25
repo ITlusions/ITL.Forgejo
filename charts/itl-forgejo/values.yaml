@@ -64,31 +64,36 @@ forgejo:
       cert-manager.io/cluster-issuer: "letsencrypt-issuer"
       traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
     hosts:
-      - host: forgejo.dev.itlusions.com
+      - host: git.itlusions.com
+        paths:
+          - path: /
+            pathType: Prefix
+            port: http
+      - host: git.dev.itlusions.com
         paths:
           - path: /
             pathType: Prefix
             port: http
     tls:
-      - secretName: forgejo-dev-itlusions-com-tls
+      - secretName: git-itlusions-com-tls
         hosts:
-          - forgejo.dev.itlusions.com
+          - git.itlusions.com
+      - secretName: git-dev-itlusions-com-tls
+        hosts:
+          - git.dev.itlusions.com
 
   gitea:
     admin:
-      # TODO: create this secret first (keys: username, password, email) —
-      # do not put real credentials in this file.
-      #   kubectl create secret generic forgejo-admin-secret -n forgejo \
-      #     --from-literal=username=admin \
-      #     --from-literal=password='...' \
-      #     --from-literal=email=admin@itlusions.com
       existingSecret: forgejo-admin-secret
 
     config:
       server:
-        DOMAIN: forgejo.dev.itlusions.com
-        ROOT_URL: "https://forgejo.dev.itlusions.com"
-        SSH_DOMAIN: forgejo.dev.itlusions.com
+        # git.itlusions.com is the primary/canonical host (repo clone
+        # URLs, SSH) - git.dev.itlusions.com above is just a second
+        # ingress host routing to the same instance.
+        DOMAIN: git.itlusions.com
+        ROOT_URL: "https://git.itlusions.com"
+        SSH_DOMAIN: git.itlusions.com
 
       # ----------------------------------------------------------------
       # In-cluster CNPG Postgres (see `postgresql:` above /

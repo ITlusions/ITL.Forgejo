@@ -67,11 +67,12 @@ helm upgrade --install forgejo . \
 See `charts/itl-forgejo/values.yaml` for the full annotated list — in short:
 
 - `ingress.*` → enabled, `className: traefik`,
-  `cert-manager.io/cluster-issuer: letsencrypt-issuer` annotation, host
-  `forgejo.dev.itlusions.com` (TODO: confirm), own TLS secret (this chart
-  uses one plain `Ingress` resource, not the multi-Ingress-per-component
-  shape `gitlab/gitlab` has — no shared-secret collision to worry about
-  here, unlike `ITL.Gitlab`)
+  `cert-manager.io/cluster-issuer: letsencrypt-issuer` annotation, two
+  hosts (`git.itlusions.com` canonical, `git.dev.itlusions.com` as a
+  second host routing to the same instance), each with its own TLS
+  secret (this chart uses one plain `Ingress` resource, not the
+  multi-Ingress-per-component shape `gitlab/gitlab` has — no
+  shared-secret collision to worry about here, unlike `ITL.Gitlab`)
 - `gitea.config.server.{DOMAIN,ROOT_URL,SSH_DOMAIN}` → matches the ingress host
 - `gitea.config.database` → in-cluster CNPG Postgres (see `postgresql.*`
   above); password via `additionalConfigFromEnvs` + CNPG's own Secret, not
