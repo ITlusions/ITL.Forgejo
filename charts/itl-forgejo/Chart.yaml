@@ -3,9 +3,9 @@ name: itl-forgejo
 description: ITLusions wrapper chart for self-hosted Forgejo, depending on the official forgejo-helm chart
 type: application
 version: 0.1.0
-appVersion: "15.0.7"
+appVersion: "15.0.10"
 icon: https://code.forgejo.org/forgejo/forgejo/raw/branch/forgejo/assets/logo.svg
 dependencies:
   - name: forgejo
-    version: "17.1.5"
+    version: "17.3.1"
     repository: "oci://code.forgejo.org/forgejo-helm"

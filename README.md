@@ -7,7 +7,7 @@ repo just holds our values overrides and cluster-specific wiring (Traefik
 ingress, cert-manager, external Postgres, in-cluster Redis), same pattern
 as `ITL.Gitlab` and `rustdesk-server`.
 
-- Chart: `charts/itl-forgejo` (depends on `forgejo/forgejo` v17.1.5, app v15.0.7)
+- Chart: `charts/itl-forgejo` (depends on `forgejo/forgejo` v17.3.1, app v15.0.10)
 - Upstream: `oci://code.forgejo.org/forgejo-helm/forgejo` ·
   https://code.forgejo.org/forgejo-helm/forgejo-helm
 - Originally published on Codeberg
